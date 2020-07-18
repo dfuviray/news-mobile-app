@@ -1,14 +1,21 @@
 import React, {useEffect} from 'react';
-import {ActivityIndicator, FlatList} from 'react-native';
+import {FlatList} from 'react-native';
 
-import {colors} from '../../config/colors';
 import {Container, Message} from './NewStyles';
 import ListItem from '../../components/ListItem/ListItem';
 import useApi from '../../hooks/useApi';
 import Separator from '../../components/Separator/Separator';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 
 export default function News() {
-  const {data, error, loading, request} = useApi();
+  const {
+    data,
+    error,
+    loading,
+    loadMore,
+    request,
+    setloadMoreloading,
+  } = useApi();
   useEffect(() => {
     request();
   }, []);
@@ -18,14 +25,17 @@ export default function News() {
       {error ? (
         <Message>Cannot retriev data</Message>
       ) : loading ? (
-        <ActivityIndicator size="large" color={colors['light-black']} />
+        <LoadingSpinner />
       ) : (
         <FlatList
           data={data}
           ItemSeparatorComponent={() => <Separator />}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => (item.id + 1).toString()}
           renderItem={({item}) => <ListItem data={item} />}
           showsVerticalScrollIndicator={false}
+          onEndReachedThreshold={0.1}
+          onEndReached={() => loadMore()}
+          ListFooterComponent={() => setloadMoreloading && <LoadingSpinner />}
         />
       )}
     </Container>
